@@ -1,33 +1,42 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://newsapi.org/v2/top-headlines';
 const API_KEY = import.meta.env.VITE_NEWS_API_KEY;
 
-export const fetchTopHeadlines = async (category = 'general') => {
-  if (!API_KEY) {
-    throw new Error('Missing VITE_NEWS_API_KEY in your .env file');
-  }
+export const fetchTopHeadlines = async () => {
+  try {
+    if (!API_KEY) {
+      throw new Error('Missing VITE_NEWS_API_KEY in your .env file');
+    }
 
-  const response = await axios.get(BASE_URL, {
-    params: {
-      category,
-      language: 'en',
-      country: 'us',
-      pageSize: 10,
-      apiKey: API_KEY,
-    },
-  });
+    const response = await axios.get(
+      'https://gnews.io/api/v4/top-headlines',
+      {
+        params: {
+          category: 'general',
+          lang: 'en',
+          max: 10,
+          apikey: API_KEY,
+        },
+      }
+    );
 
-  const articles = response.data.articles || [];
+    const articles = response.data.articles || [];
 
-  return articles
-    .filter((article) => article.title && article.title !== '[Removed]')
-    .map((article, index) => ({
+    return articles.map((article, index) => ({
       id: `${index}-${article.publishedAt}`,
       title: article.title,
       description: article.description || 'No description available.',
-      image: article.urlToImage,
+      image: article.image,
       url: article.url,
       source: article.source?.name || 'Unknown',
     }));
+  } catch (error) {
+    if (error.response?.status === 429) {
+      throw new Error(
+        'News service is temporarily busy. Please try again in a moment.'
+      );
+    }
+
+    throw new Error('Unable to load news.');
+  }
 };
