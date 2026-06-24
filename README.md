@@ -45,14 +45,6 @@ src/
 * Route Protection
 * Responsive Design
 
-## Tech Stack
-
-* React
-* Vite
-* Zustand
-* React Router DOM
-* Tailwind CSS
-* Axios
 
 ## APIs
 
